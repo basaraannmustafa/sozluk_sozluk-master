@@ -1,31 +1,24 @@
+# redis_listele.py
 from redis_baglanti import redis_baglan
 
 def tum_kelimeleri_getir():
     r = redis_baglan()
     kelimeler = {}
 
-    for key in r.keys('*'):
-        try:
-            if r.type(key) != b'hash':
-                continue
-
-            # Veri alınıyor
-            veri = r.hgetall(key)
-            anlam = veri.get(b'anlam', b'').decode('utf-8').strip()
-            es_anlam = veri.get(b'es_anlamlar', b'').decode('utf-8').strip()
-            orijinal = veri.get(b'orijinal', key).decode('utf-8').strip()
-
-            # Önemli nokta burası: Hem küçük hem orijinal kelimeler eşleniyor
-            kelimeler[orijinal.lower()] = {
-                "anlam": anlam,
-                "es_anlamlar": es_anlam,
-                "orijinal": orijinal
-            }
-
-        except Exception as e:
-            print(f"Hata ({key}): {e}")
+    for key in r.keys("*"):
+        if r.type(key) != b'hash':
             continue
 
-    # Alfabetik olarak orijinal değerleri sıralayıp döndürelim
-    sirali_kelimeler = dict(sorted(kelimeler.items(), key=lambda x: x[1]['orijinal'].lower()))
-    return sirali_kelimeler
+        veri = r.hgetall(key)
+        anlam = veri.get("anlam", "")
+        es_anlam = veri.get("es_anlamlar", "")
+        orijinal = veri.get("orijinal", key)
+
+        # normalize edilmiş key ile saklıyoruz
+        kelimeler[key.lower()] = {
+            "anlam": anlam,
+            "es_anlamlar": es_anlam,
+            "orijinal": orijinal
+        }
+
+    return dict(sorted(kelimeler.items()))

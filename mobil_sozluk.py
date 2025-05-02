@@ -61,26 +61,22 @@ elif sayfa == "\ud83d\udcd6 S\u00f6zl\u00fck":
 
     if st.button("Ara"):
         aranan = kelime.strip().lower()
+        bilgi = sozluk.get(aranan)
 
-        eslesen_kayit = None
-        for k, v in sozluk.items():
-            if k.lower() == aranan:
-                eslesen_kayit = (k, v)
-                break
-
-        if eslesen_kayit:
-            kelime_adı, bilgi = eslesen_kayit
+        if not bilgi:
+            st.error("Kelime bulunamadı.")
+        else:
             anlam = bilgi.get("anlam", "-")
             es = bilgi.get("es_anlamlar", "")
+            orijinal = bilgi.get("orijinal", aranan)
+
             st.markdown(f"""
             <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;margin-bottom:10px;'>
-                <h4>\ud83c\udf24\ufe0f <b>{kelime_adı.capitalize()}</b></h4>
-                <p>\ud83d\udccc <b>Anlamı:</b> {anlam}</p>
-                <p>\ud83d\udd70 <b>E\u015f Anlamlılar:</b> {es or 'Yok'}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.error("Kelime bulunamadı.")
+                <h4>🔤 <b>{orijinal.capitalize()}</b></h4>
+                <p>📌 <b>Anlamı:</b> {anlam}</p>
+                <p>🟰 <b>Eş Anlamlılar:</b> {es or 'Yok'}</p>
+         </div>
+         """, unsafe_allow_html=True)
 
     st.subheader("\u270d\ufe0f Yeni Kelime Ekle")
     yeni_kelime = st.text_input("Yeni Kelime:", key="ekle_kelime")

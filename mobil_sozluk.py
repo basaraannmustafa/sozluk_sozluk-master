@@ -1,6 +1,5 @@
 import streamlit as st
 import random
-import os
 import pandas as pd
 
 from redis_ekle import kelime_ekle
@@ -48,16 +47,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-sayfa = st.sidebar.selectbox("📑 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "🎯 Quiz Modu", "🧾 Sözlük Listesi"])
+sayfa = st.sidebar.selectbox("📁 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "🎯 Quiz Modu", "📞 Sözlük Listesi"])
 
 if sayfa == "🏠 Ana Sayfa":
-    st.markdown("## 🧭 İngilizce-Türkçe Sözlük")
+    st.markdown("## 🗭 İngilizce-Türkçe Sözlük")
     st.markdown("Bu site ile kelime arayabilir, yeni kelime ekleyebilir veya Quiz modunda kendinizi test edebilirsiniz.")
 
 elif sayfa == "📖 Sözlük":
     st.subheader("🔍 Kelime Ara")
     kelime = st.text_input("Kelime giriniz:", key="arama_kelimesi")
-
     sozluk = tum_kelimeleri_getir()
 
     if st.button("Ara"):
@@ -67,13 +65,11 @@ elif sayfa == "📖 Sözlük":
         if not bilgi:
             st.error("Kelime bulunamadı.")
         else:
-            anlam = bilgi.get('anlam', '-')
-            es = bilgi.get('es_anlamlar', '')
             st.markdown(f"""
             <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;margin-bottom:10px;'>
-                <h4>🔤 <b>{kelime.capitalize()}</b></h4>
-                <p><b>📌 Anlamı:</b> {anlam}</p>
-                <p><b>🟰 Eş Anlamlılar:</b> {es or 'Yok'}</p>
+                <h4>🔤 <b>{bilgi.get('orijinal', giris).capitalize()}</b></h4>
+                <p><b>📌 Anlamı:</b> {bilgi.get('anlam', '-')}</p>
+                <p><b>🝰 Eş Anlamlılar:</b> {bilgi.get('es_anlamlar') or 'Yok'}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -102,7 +98,7 @@ elif sayfa == "📖 Sözlük":
 elif sayfa == "🎯 Quiz Modu":
     st.subheader("🧪 Quiz Modu")
     sozluk = tum_kelimeleri_getir()
-    ters_sozluk = {v['anlam']: k for k, v in sozluk.items()}
+    ters_sozluk = {v['anlam']: k for k, v in sozluk.items() if 'anlam' in v}
 
     if "quiz_kelime" not in st.session_state:
         st.session_state.quiz_kelime = ""
@@ -111,20 +107,23 @@ elif sayfa == "🎯 Quiz Modu":
         st.session_state.sec_option = ""
 
     def yeni_soru():
+        if not sozluk:
+            return
+
         if random.choice([True, False]):
             st.session_state.soru_tipi = "ing-tr"
             st.session_state.quiz_kelime, bilgi = random.choice(list(sozluk.items()))
             st.session_state.quiz_cevap = bilgi['anlam']
-            secenekler = random.sample([v['anlam'] for v in sozluk.values()], 4)
+            secenekler = random.sample([v['anlam'] for v in sozluk.values() if 'anlam' in v], min(4, len(sozluk)))
         else:
             st.session_state.soru_tipi = "tr-ing"
             anlam, kelime = random.choice(list(ters_sozluk.items()))
             st.session_state.quiz_kelime = anlam
             st.session_state.quiz_cevap = kelime
-            secenekler = random.sample(list(ters_sozluk.values()), 4)
+            secenekler = random.sample(list(ters_sozluk.values()), min(4, len(ters_sozluk)))
 
         if st.session_state.quiz_cevap not in secenekler:
-            secenekler[random.randint(0, 3)] = st.session_state.quiz_cevap
+            secenekler[random.randint(0, len(secenekler)-1)] = st.session_state.quiz_cevap
 
         random.shuffle(secenekler)
         st.session_state.sec_options = secenekler
@@ -142,19 +141,17 @@ elif sayfa == "🎯 Quiz Modu":
                     st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
                 st.session_state.quiz_kelime = ""
 
-elif sayfa == "🧾 Sözlük Listesi":
+elif sayfa == "📞 Sözlük Listesi":
     st.header("📘 Tüm Sözlük Kartları")
     sozluk = tum_kelimeleri_getir()
 
     if sozluk:
         for kelime, bilgi in sozluk.items():
-            anlam = bilgi.get("anlam", "-")
-            es = bilgi.get("es_anlamlar", "")
             st.markdown(f"""
             <div style="background-color:#ffffff;padding:15px;border-radius:10px;margin-bottom:10px;box-shadow:2px 2px 5px rgba(0,0,0,0.05);">
-            <h4>🔤 <b>{kelime.capitalize()}</b></h4>
-            <p><b>📌 Anlamı:</b> {anlam}</p>
-            <p><b>🟰 Eş Anlamlılar:</b> {es or 'Yok'}</p>
+                <h4>🔤 <b>{bilgi.get('orijinal', kelime).capitalize()}</b></h4>
+                <p><b>📌 Anlamı:</b> {bilgi.get('anlam', '-')}</p>
+                <p><b>🝰 Eş Anlamlılar:</b> {bilgi.get('es_anlamlar', 'Yok')}</p>
             </div>
             """, unsafe_allow_html=True)
     else:

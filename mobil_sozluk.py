@@ -47,56 +47,65 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-sayfa = st.sidebar.selectbox("📁 Sayfa Seçiniz", ["🏠 Ana Sayfa", "📖 Sözlük", "🎯 Quiz Modu", "📞 Sözlük Listesi"])
+sayfa = st.sidebar.selectbox("\ud83d\udcc1 Sayfa Se\u00e7iniz", ["\ud83c\udfe0 Ana Sayfa", "\ud83d\udcd6 S\u00f6zl\u00fck", "\ud83c\udfaf Quiz Modu", "\ud83d\udcde S\u00f6zl\u00fck Listesi"])
 
-if sayfa == "🏠 Ana Sayfa":
-    st.markdown("## 🗭 İngilizce-Türkçe Sözlük")
+if sayfa == "\ud83c\udfe0 Ana Sayfa":
+    st.markdown("## \ud83d\udfdd\ufe0f \u0130ngilizce-T\u00fcrk\u00e7e S\u00f6zl\u00fck")
     st.markdown("Bu site ile kelime arayabilir, yeni kelime ekleyebilir veya Quiz modunda kendinizi test edebilirsiniz.")
 
-elif sayfa == "📖 Sözlük":
-    st.subheader("🔍 Kelime Ara")
+elif sayfa == "\ud83d\udcd6 S\u00f6zl\u00fck":
+    st.subheader("\ud83d\udd0d Kelime Ara")
     kelime = st.text_input("Kelime giriniz:", key="arama_kelimesi")
+
     sozluk = tum_kelimeleri_getir()
 
     if st.button("Ara"):
-        giris = kelime.strip().lower()
-        bilgi = sozluk.get(giris)
+        aranan = kelime.strip().lower()
 
-        if not bilgi:
-            st.error("Kelime bulunamadı.")
-        else:
+        eslesen_kayit = None
+        for k, v in sozluk.items():
+            if k.lower() == aranan:
+                eslesen_kayit = (k, v)
+                break
+
+        if eslesen_kayit:
+            kelime_adı, bilgi = eslesen_kayit
+            anlam = bilgi.get("anlam", "-")
+            es = bilgi.get("es_anlamlar", "")
             st.markdown(f"""
             <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;margin-bottom:10px;'>
-                <h4>🔤 <b>{bilgi.get('orijinal', giris).capitalize()}</b></h4>
-                <p><b>📌 Anlamı:</b> {bilgi.get('anlam', '-')}</p>
-                <p><b>🝰 Eş Anlamlılar:</b> {bilgi.get('es_anlamlar') or 'Yok'}</p>
+                <h4>\ud83c\udf24\ufe0f <b>{kelime_adı.capitalize()}</b></h4>
+                <p>\ud83d\udccc <b>Anlamı:</b> {anlam}</p>
+                <p>\ud83d\udd70 <b>E\u015f Anlamlılar:</b> {es or 'Yok'}</p>
             </div>
             """, unsafe_allow_html=True)
+        else:
+            st.error("Kelime bulunamadı.")
 
-    st.subheader("✍️ Yeni Kelime Ekle")
+    st.subheader("\u270d\ufe0f Yeni Kelime Ekle")
     yeni_kelime = st.text_input("Yeni Kelime:", key="ekle_kelime")
     yeni_anlam = st.text_input("Anlamı:", key="ekle_anlam")
-    es_anlamlilar = st.text_input("Bu Kelimenin Eş Anlamlıları:", key="ekle_es")
+    es_anlamlilar = st.text_input("Bu Kelimenin E\u015f Anlamlıları:", key="ekle_es")
 
     if st.button("Ekle"):
         if yeni_kelime and yeni_anlam:
             es_anlam_listesi = [w.strip() for w in es_anlamlilar.split(",") if w.strip()]
             kelime_ekle(yeni_kelime, yeni_anlam, es_anlam_listesi)
-            st.success(f"✅ '{yeni_kelime.capitalize()}' eklenmiştir.")
+            st.success(f"\u2705 '{yeni_kelime.capitalize()}' eklenmi\u015ftir.")
         else:
-            st.error("Lütfen hem kelimeyi hem anlamını girin.")
+            st.error("L\u00fctfen hem kelimeyi hem anlamını girin.")
 
-    st.subheader("🗑️ Kelime Sil")
+    st.subheader("\ud83d\uddd1\ufe0f Kelime Sil")
     sil_kelime = st.text_input("Silinecek Kelime:", key="sil_kelime")
     if st.button("Sil"):
         sonuc = kelime_sil(sil_kelime)
         if sonuc == 1:
-            st.warning(f"❌ '{sil_kelime.capitalize()}' silinmiştir.")
+            st.warning(f"\u274c '{sil_kelime.capitalize()}' silinmi\u015ftir.")
         else:
             st.error("Kelime bulunamadı.")
 
-elif sayfa == "🎯 Quiz Modu":
-    st.subheader("🧪 Quiz Modu")
+elif sayfa == "\ud83c\udfaf Quiz Modu":
+    st.subheader("\ud83e\uddea Quiz Modu")
     sozluk = tum_kelimeleri_getir()
     ters_sozluk = {v['anlam']: k for k, v in sozluk.items() if 'anlam' in v}
 
@@ -128,30 +137,30 @@ elif sayfa == "🎯 Quiz Modu":
         random.shuffle(secenekler)
         st.session_state.sec_options = secenekler
 
-    if st.button("🔄 Yeni Soru"):
+    if st.button("\ud83d\udd04 Yeni Soru"):
         yeni_soru()
 
     if st.session_state.quiz_kelime:
-        st.markdown(f"**❓ {st.session_state.quiz_kelime} ne anlama gelir?**")
+        st.markdown(f"**\u2753 {st.session_state.quiz_kelime} ne anlama gelir?**")
         for secenek in st.session_state.sec_options:
             if st.button(secenek):
                 if secenek == st.session_state.quiz_cevap:
-                    st.success("✅ Doğru!")
+                    st.success("\u2705 Do\u011fru!")
                 else:
-                    st.error(f"❌ Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
+                    st.error(f"\u274c Yanlış! Doğru cevap: {st.session_state.quiz_cevap}")
                 st.session_state.quiz_kelime = ""
 
-elif sayfa == "📞 Sözlük Listesi":
-    st.header("📘 Tüm Sözlük Kartları")
+elif sayfa == "\ud83d\udcde S\u00f6zl\u00fck Listesi":
+    st.header("\ud83d\udcd8 T\u00fcm S\u00f6zl\u00fck Kartları")
     sozluk = tum_kelimeleri_getir()
 
     if sozluk:
         for kelime, bilgi in sozluk.items():
             st.markdown(f"""
             <div style="background-color:#ffffff;padding:15px;border-radius:10px;margin-bottom:10px;box-shadow:2px 2px 5px rgba(0,0,0,0.05);">
-                <h4>🔤 <b>{bilgi.get('orijinal', kelime).capitalize()}</b></h4>
-                <p><b>📌 Anlamı:</b> {bilgi.get('anlam', '-')}</p>
-                <p><b>🝰 Eş Anlamlılar:</b> {bilgi.get('es_anlamlar', 'Yok')}</p>
+                <h4>\ud83c\udf24\ufe0f <b>{bilgi.get('orijinal', kelime).capitalize()}</b></h4>
+                <p><b>\ud83d\udccc Anlamı:</b> {bilgi.get('anlam', '-')}</p>
+                <p><b>\ud83d\udd70 E\u015f Anlamlılar:</b> {bilgi.get('es_anlamlar', 'Yok')}</p>
             </div>
             """, unsafe_allow_html=True)
     else:

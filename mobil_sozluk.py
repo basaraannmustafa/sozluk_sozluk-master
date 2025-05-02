@@ -59,24 +59,25 @@ elif sayfa == "\ud83d\udcd6 S\u00f6zl\u00fck":
 
     sozluk = tum_kelimeleri_getir()
 
-    if st.button("Ara"):
-        aranan = kelime.strip().lower()
-        bilgi = sozluk.get(aranan)
+    # Sözlük sayfasındaki arama kısmı için:
+if st.button("Ara"):
+    aranan = kelime.strip().lower()
+    bilgi = sozluk.get(aranan)
 
-        if not bilgi:
-            st.error("Kelime bulunamadı.")
-        else:
-            anlam = bilgi.get("anlam", "-")
-            es = bilgi.get("es_anlamlar", "")
-            orijinal = bilgi.get("orijinal", aranan)
+    if not bilgi:
+        st.error("Kelime bulunamadı.")
+    else:
+        orijinal = bilgi.get('orijinal', aranan)
+        anlam = bilgi.get('anlam', '-')
+        es = bilgi.get('es_anlamlar', '')
 
-            st.markdown(f"""
-            <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;margin-bottom:10px;'>
-                <h4>🔤 <b>{orijinal.capitalize()}</b></h4>
-                <p>📌 <b>Anlamı:</b> {anlam}</p>
-                <p>🟰 <b>Eş Anlamlılar:</b> {es or 'Yok'}</p>
-         </div>
-         """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;margin-bottom:10px;'>
+            <h4>🔤 <b>{orijinal.capitalize()}</b></h4>
+            <p>📌 <b>Anlamı:</b> {anlam}</p>
+            <p>🟰 <b>Eş Anlamlılar:</b> {es or 'Yok'}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.subheader("\u270d\ufe0f Yeni Kelime Ekle")
     yeni_kelime = st.text_input("Yeni Kelime:", key="ekle_kelime")
@@ -151,10 +152,12 @@ elif sayfa == "\ud83d\udcde S\u00f6zl\u00fck Listesi":
     sozluk = tum_kelimeleri_getir()
 
     if sozluk:
-        for kelime, bilgi in sozluk.items():
+        for key, bilgi in sozluk.items():
+            # Orijinal kelimeyi bilgi içinden al
+            orijinal_kelime = bilgi.get('orijinal', key).capitalize()
             st.markdown(f"""
             <div style="background-color:#ffffff;padding:15px;border-radius:10px;margin-bottom:10px;box-shadow:2px 2px 5px rgba(0,0,0,0.05);">
-                <h4>\ud83c\udf24\ufe0f <b>{bilgi.get('orijinal', kelime).capitalize()}</b></h4>
+                <h4>\ud83c\udf24\ufe0f <b>{orijinal_kelime}</b></h4>
                 <p><b>\ud83d\udccc Anlamı:</b> {bilgi.get('anlam', '-')}</p>
                 <p><b>\ud83d\udd70 E\u015f Anlamlılar:</b> {bilgi.get('es_anlamlar', 'Yok')}</p>
             </div>

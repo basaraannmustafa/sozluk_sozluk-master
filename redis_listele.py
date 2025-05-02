@@ -12,9 +12,12 @@ def tum_kelimeleri_getir():
         anlam = veri.get('anlam', '-')
         es_anlam = veri.get('es_anlamlar', '')
         orijinal = veri.get('orijinal', key)
-        kelimeler[orijinal] = {
+        
+        # Sözlükte anahtar olarak key (küçük harfli kelime) kullanılmalı
+        kelimeler[key] = {
+            "orijinal": orijinal,  # Orijinal kelimeyi de veri içinde tut
             "anlam": anlam,
             "es_anlamlar": es_anlam
         }
 
-    return dict(sorted(kelimeler.items()))
+    # Alfabetik sıralama (küçük har
